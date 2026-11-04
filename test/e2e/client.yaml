@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client
+  namespace: gfw-test
+  labels:
+    greatfirewall/profile: dev-sandbox
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    sysctls:
+      - name: net.ipv6.conf.all.disable_ipv6
+        value: "1"
+      - name: net.ipv6.conf.default.disable_ipv6
+        value: "1"
+  containers:
+    - name: client
+      image: busybox:1.37
+      command: [sleep, "7200"]

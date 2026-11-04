@@ -1,0 +1,16 @@
+platform:
+  ipv6Disabled: true
+api:
+  tokenSecret: gfw-demo-auth
+mock:
+  enabled: true
+  tlsSecret: gfw-demo-tls
+  profiles:
+    dev-sandbox:
+      profile: dev-sandbox
+      revision: "1"
+      egress:
+        - cidr: 192.0.2.10/32
+          ports:
+            - protocol: TCP
+              port: 443

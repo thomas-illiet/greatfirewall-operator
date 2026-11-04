@@ -1,0 +1,7 @@
+.git
+reports
+coverage.out
+bin
+.tmp
+docs
+.DS_Store

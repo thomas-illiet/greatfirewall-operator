@@ -1,0 +1,6 @@
+/bin/
+/reports/
+/coverage.out
+/.tmp/
+*.test
+.DS_Store

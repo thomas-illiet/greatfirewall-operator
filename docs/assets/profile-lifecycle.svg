@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Profile synchronization lifecycle</title>
+  <desc id="desc">A valid profile replaces permissions. A 404 persists a full block. Other errors retain the previous state without restoring a revoked profile.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 L9 5 L0 10" fill="#475569"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, -apple-system, sans-serif; fill: #172554; }
+      .heading { font-size: 29px; font-weight: 700; }
+      .label { font-size: 20px; font-weight: 650; }
+      .body { font-size: 16px; fill: #475569; }
+      .caption { font-size: 14px; fill: #475569; }
+      .arrow { fill: none; stroke: #475569; stroke-width: 2; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1200" height="650" fill="#f8fafc"/>
+  <text x="40" y="48" class="heading">Profiles · synchronization decisions</text>
+  <text x="40" y="78" class="body">On first use, then every 60 seconds · HTTPS + Bearer token</text>
+  <rect x="400" y="110" width="400" height="72" rx="12" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="600" y="140" text-anchor="middle" class="label">GET /v1/profiles/{name}</text>
+  <text x="600" y="165" text-anchor="middle" class="caption">Timeout: 5 seconds · no redirects</text>
+  <path d="M500 182 V210 H220 V248" class="arrow"/>
+  <path d="M600 182 V248" class="arrow"/>
+  <path d="M700 182 V210 H980 V248" class="arrow"/>
+  <rect x="60" y="255" width="320" height="118" rx="12" fill="#dcfce7" stroke="#86efac"/>
+  <text x="85" y="290" class="label">200 · valid profile</text>
+  <text x="85" y="321" class="body">Validate the entire response</text>
+  <text x="85" y="348" class="body">Persist the new profile</text>
+  <rect x="440" y="255" width="320" height="118" rx="12" fill="#fee2e2" stroke="#fca5a5"/>
+  <text x="465" y="290" class="label">404 · revocation</text>
+  <text x="465" y="321" class="body">Replace the previous profile</text>
+  <text x="465" y="348" class="body">Persist the revoked state</text>
+  <rect x="820" y="255" width="320" height="118" rx="12" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="845" y="290" class="label">Error / invalid response</text>
+  <text x="845" y="321" class="body">401, 403, 5xx, TLS, timeout…</text>
+  <text x="845" y="348" class="body">Report synchronization failure</text>
+  <path d="M220 373 V428" class="arrow"/>
+  <path d="M600 373 V428" class="arrow"/>
+  <path d="M980 373 V428" class="arrow"/>
+  <rect x="60" y="435" width="320" height="110" rx="12" fill="white" stroke="#cbd5e1"/>
+  <text x="85" y="472" class="label">Allow IPv4 + DNS</text>
+  <text x="85" y="505" class="body">Empty list: DNS only</text>
+  <rect x="440" y="435" width="320" height="110" rx="12" fill="white" stroke="#cbd5e1"/>
+  <text x="465" y="472" class="label">Deny all</text>
+  <text x="465" y="505" class="body">No egress, including DNS</text>
+  <rect x="820" y="435" width="320" height="110" rx="12" fill="white" stroke="#cbd5e1"/>
+  <text x="845" y="472" class="label">Retain previous state</text>
+  <text x="845" y="505" class="body">No valid cache: deny all</text>
+  <rect x="60" y="578" width="1080" height="45" rx="10" fill="#eef2ff"/>
+  <text x="600" y="606" text-anchor="middle" class="body">The cache is revalidated after restart. Revoked state blocks access until a new valid response arrives.</text>
+</svg>

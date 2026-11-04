@@ -1,0 +1,119 @@
+{{- if .Values.mock.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gfw.name" . }}-mock
+data:
+  mock.yaml: |
+    address: ":8443"
+    tokenFile: /secrets/token/tokens
+    profilesFile: /profiles/profiles.yaml
+    certificateFile: /secrets/tls/tls.crt
+    keyFile: /secrets/tls/tls.key
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gfw.name" . }}-profiles
+data:
+  profiles.yaml: |
+    profiles:
+      {{- toYaml .Values.mock.profiles | nindent 6 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "gfw.name" . }}-mock
+spec:
+  ipFamilyPolicy: SingleStack
+  ipFamilies: [IPv4]
+  selector:
+    app.kubernetes.io/name: {{ include "gfw.name" . }}-mock
+  ports:
+    - name: https
+      port: 8443
+      targetPort: https
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gfw.name" . }}-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "gfw.name" . }}-mock
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "gfw.name" . }}-mock
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: mock-api
+          image: "{{ .Values.mock.image.repository }}:{{ .Values.mock.image.tag }}"
+          imagePullPolicy: {{ .Values.mock.image.pullPolicy }}
+          args: ["--config", "/config/mock.yaml", "--log-level", {{ .Values.logLevel | quote }}]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          ports:
+            - name: https
+              containerPort: 8443
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: https
+              scheme: HTTPS
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: https
+              scheme: HTTPS
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: profiles
+              mountPath: /profiles
+              readOnly: true
+            - name: token
+              mountPath: /secrets/token
+              readOnly: true
+            - name: tls
+              mountPath: /secrets/tls
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "gfw.name" . }}-mock
+        - name: profiles
+          configMap:
+            name: {{ include "gfw.name" . }}-profiles
+        - name: token
+          secret:
+            secretName: {{ default .Values.api.tokenSecret .Values.mock.tokenSecret }}
+            defaultMode: 0440
+            items:
+              - key: {{ .Values.mock.tokenKey }}
+                path: tokens
+        - name: tls
+          secret:
+            secretName: {{ .Values.mock.tlsSecret }}
+            defaultMode: 0440
+{{- end }}

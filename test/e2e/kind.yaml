@@ -1,0 +1,14 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  disableDefaultCNI: true
+  ipFamily: ipv4
+  podSubnet: 192.168.0.0/16
+nodes:
+  - role: control-plane
+kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    allowedUnsafeSysctls:
+      - net.ipv6.conf.all.disable_ipv6
+      - net.ipv6.conf.default.disable_ipv6

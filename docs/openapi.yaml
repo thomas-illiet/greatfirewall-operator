@@ -1,0 +1,113 @@
+openapi: 3.0.3
+info:
+  title: Great Firewall Profiles API
+  version: 1.0.0
+  description: IPv4-only profiles delivered over authenticated HTTPS.
+servers:
+  - url: https://profiles.example.internal
+security:
+  - bearerAuth: []
+paths:
+  /v1/profiles/{name}:
+    get:
+      operationId: getProfile
+      summary: Retrieve the complete IPv4 egress profile
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ProfileName'
+      responses:
+        '200':
+          description: Valid profile; an empty egress list allows only cluster DNS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid profile name.
+        '401':
+          description: Missing or incorrect token; not a revocation.
+          headers:
+            WWW-Authenticate:
+              schema:
+                type: string
+                example: Bearer
+        '403':
+          description: Access forbidden; retain previous state.
+        '404':
+          description: Authenticated explicit revocation, including DNS permission.
+        '500':
+          description: Profiles unavailable or malformed; retain previous state.
+        '503':
+          description: Authentication unavailable; retain previous state.
+  /healthz:
+    get:
+      operationId: health
+      security: []
+      responses:
+        '200':
+          description: Process is serving; no configuration is disclosed.
+  /readyz:
+    get:
+      operationId: ready
+      security: []
+      responses:
+        '200':
+          description: Process accepts requests; no configuration is disclosed.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+  schemas:
+    ProfileName:
+      type: string
+      minLength: 1
+      maxLength: 63
+      pattern: '^[A-Za-z0-9]([A-Za-z0-9_.-]*[A-Za-z0-9])?$'
+    Profile:
+      type: object
+      additionalProperties: false
+      required: [profile, revision, egress]
+      properties:
+        profile:
+          $ref: '#/components/schemas/ProfileName'
+        revision:
+          type: string
+          minLength: 1
+          maxLength: 256
+        egress:
+          type: array
+          maxItems: 1024
+          items:
+            $ref: '#/components/schemas/Rule'
+    Rule:
+      type: object
+      additionalProperties: false
+      required: [cidr, ports]
+      properties:
+        cidr:
+          type: string
+          description: IPv4 address or IPv4 CIDR only. IPv6 and IPv4-mapped IPv6 are rejected.
+          example: 192.0.2.10/32
+        ports:
+          type: array
+          minItems: 1
+          maxItems: 128
+          items:
+            $ref: '#/components/schemas/Port'
+    Port:
+      type: object
+      additionalProperties: false
+      required: [protocol, port]
+      properties:
+        protocol:
+          type: string
+          enum: [TCP, UDP]
+        port:
+          type: integer
+          minimum: 1
+          maximum: 65535

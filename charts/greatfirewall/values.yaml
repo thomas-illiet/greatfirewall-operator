@@ -1,0 +1,46 @@
+replicas: 1
+image:
+  repository: greatfirewall/operator
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+# This acknowledgement does not disable IPv6. The platform must do that first.
+platform:
+  ipv6Disabled: false
+
+api:
+  url: ""
+  tokenSecret: ""
+  tokenKey: token
+  caSecret: ""
+  caKey: ca.crt
+  refreshInterval: 60s
+  timeout: 5s
+
+dns:
+  namespace: kube-system
+  selector:
+    k8s-app: kube-dns
+  addresses: []
+
+logLevel: info
+metrics:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+mock:
+  enabled: false
+  image:
+    repository: greatfirewall/mock-api
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  tokenSecret: ""
+  tokenKey: tokens
+  tlsSecret: ""
+  profiles: {}

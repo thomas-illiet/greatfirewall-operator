@@ -1,0 +1,21 @@
+{{- include "gfw.validate" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "gfw.name" . }}-config
+data:
+  operator.yaml: |
+    apiURL: {{ include "gfw.apiURL" . | quote }}
+    tokenFile: /secrets/token/token
+    {{- if or .Values.api.caSecret .Values.mock.enabled }}
+    caFile: /secrets/ca/ca.crt
+    {{- end }}
+    namespace: {{ .Release.Namespace | quote }}
+    ipv6Disabled: true
+    refreshInterval: {{ .Values.api.refreshInterval | quote }}
+    httpTimeout: {{ .Values.api.timeout | quote }}
+    healthAddress: ":8081"
+    metricsAddress: {{ ternary ":8444" "0" .Values.metrics.enabled | quote }}
+    leaderElection: true
+    dns:
+      {{- toYaml .Values.dns | nindent 6 }}
